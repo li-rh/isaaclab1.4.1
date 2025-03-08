@@ -43,6 +43,9 @@ from omni.isaac.lab.sim import SimulationContext
 ##
 # Pre-defined configs
 ##
+# isort:skip 是一个特殊的注释，用于告诉 isort 工具跳过对这行导入语句的排序。
+# isort 是一个常用的 Python 代码格式化工具，它会自动对导入语句进行排序，以提高代码的可读性。
+# 添加 # isort:skip 注释后，isort 在处理代码时会忽略这行导入语句，保持其在代码中的原有位置
 from omni.isaac.lab_assets import CARTPOLE_CFG  # isort:skip
 
 
@@ -98,14 +101,32 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Articula
             robot.write_root_velocity_to_sim(root_state[:, 7:])
             # set joint positions with some noise
             joint_pos, joint_vel = robot.data.default_joint_pos.clone(), robot.data.default_joint_vel.clone()
+            print('joint_pos:', joint_pos, 'joint_vel:', joint_vel)
             joint_pos += torch.rand_like(joint_pos) * 0.1
+            print('joint_pos:', joint_pos)
+            joint_pos += 1.57
             robot.write_joint_state_to_sim(joint_pos, joint_vel)
             # clear internal buffers
             robot.reset()
             print("[INFO]: Resetting robot state...")
+            # sim.step()
+            # # Increment counter
+            # count += 1
+            # # Update buffers
+            # robot.update(sim_dt)
+            # import time 
+            # while 1:
+            #     sim.step()
+            #     robot.update(sim_dt)
+            #     time.sleep(3)
+            # break
         # Apply random action
         # -- generate random joint efforts
         efforts = torch.randn_like(robot.data.joint_pos) * 5.0
+        # print(efforts.device)
+        efforts = torch.randn_like(robot.data.joint_pos) * torch.tensor([100, 0.0], device=torch.device(robot.device))
+        efforts = torch.ones_like(robot.data.joint_pos) * torch.tensor([100, 0.0], device=robot.data.joint_pos.device)
+        # print('efforts: ',efforts)
         # -- apply action to the robot
         robot.set_joint_effort_target(efforts)
         # -- write data to sim
@@ -124,7 +145,7 @@ def main():
     sim_cfg = sim_utils.SimulationCfg(device=args_cli.device)
     sim = SimulationContext(sim_cfg)
     # Set main camera
-    sim.set_camera_view([2.5, 0.0, 4.0], [0.0, 0.0, 2.0])
+    sim.set_camera_view((2.5, 0.0, 4.0), (0.0, 0.0, 2.0))
     # Design scene
     scene_entities, scene_origins = design_scene()
     scene_origins = torch.tensor(scene_origins, device=sim.device)

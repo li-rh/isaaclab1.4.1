@@ -51,6 +51,12 @@ from omni.isaac.lab_assets import CARTPOLE_CFG  # isort:skip
 class CartpoleSceneCfg(InteractiveSceneCfg):
     """Configuration for a cart-pole scene."""
 
+    '''
+    地面平面和光源的配置与cartpole的配置之间存在一个关键区别。地面平面和光源是不可交互的，而cartpole是可交互的。
+    这种区别在用于指定它们的配置类中得到了体现。
+    地面平面和光源的配置使用 assets.AssetBaseCfg 的实例来指定，而cartpole使用 assets.ArticulationCfg 的实例来进行配置。
+    在模拟步骤期间，不处理任何不是交互式prim（即既不是资产也不是传感器）。
+    '''
     # ground plane
     ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
 
@@ -60,6 +66,8 @@ class CartpoleSceneCfg(InteractiveSceneCfg):
     )
 
     # articulation
+    # 任何带有 ENV_REGEX_NS 变量的实体的prim路径在每个环境中都会被克隆。
+    # 这个路径会被场景对象替换为 /World/envs/env_{i} ，其中 i 是环境索引。
     cartpole: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
 
@@ -116,7 +124,9 @@ def main():
     sim.set_camera_view([2.5, 0.0, 4.0], [0.0, 0.0, 2.0])
     # Design scene
     scene_cfg = CartpoleSceneCfg(num_envs=args_cli.num_envs, env_spacing=2.0)
+
     scene = InteractiveScene(scene_cfg)
+    print(scene.env_origins)
     # Play the simulator
     sim.reset()
     # Now we are ready!

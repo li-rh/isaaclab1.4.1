@@ -71,6 +71,14 @@ def design_scene():
         debug_vis=True,
     )
     cube_object = DeformableObject(cfg=cfg)
+    # # 生成带有形变属性的长方体
+    # cfg_cuboid_deformable = sim_utils.MeshCuboidCfg(
+    #     size=(0.2, 0.5, 0.2),
+    #     deformable_props=sim_utils.DeformableBodyPropertiesCfg(),
+    #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
+    #     physics_material=sim_utils.DeformableBodyMaterialCfg(),
+    # )
+    # cfg_cuboid_deformable.func("/World/Objects/CuboidDeformable", cfg_cuboid_deformable, translation=(0.15, 0.0, 2.0))
 
     # return the scene information
     scene_entities = {"cube_object": cube_object}
@@ -90,7 +98,7 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Deformab
 
     # Nodal kinematic targets of the deformable bodies
     nodal_kinematic_target = cube_object.data.nodal_kinematic_target.clone()
-
+    print('nodal_kinematic_target: ', nodal_kinematic_target, 'nodal_kinematic_target.shape: ', nodal_kinematic_target.shape)
     # Simulate physics
     while simulation_app.is_running():
         # reset
@@ -140,6 +148,7 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Deformab
         cube_object.update(sim_dt)
         # print the root position
         if count % 50 == 0:
+            # 对于可变形物体来说，没有根状态的概念。然而，我们计算根位置的方法是所有网格节点的平均位置。
             print(f"Root position (in world): {cube_object.data.root_pos_w[:, :3]}")
 
 

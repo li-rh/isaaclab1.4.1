@@ -40,6 +40,7 @@ class CartpoleEnvCfg(DirectRLEnvCfg):
     pole_dof_name = "cart_to_pole"
 
     # scene
+    # replicate_physics表示复制引擎，默认是True，但是如果有deformable object（可形变物体），需要设置为False
     scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=4096, env_spacing=4.0, replicate_physics=True)
 
     # reset

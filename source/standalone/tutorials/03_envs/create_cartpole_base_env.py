@@ -41,7 +41,7 @@ from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
 from omni.isaac.lab.managers import SceneEntityCfg
 from omni.isaac.lab.utils import configclass
 
-from omni.isaac.lab_tasks.manager_based.classic.cartpole.cartpole_env_cfg import CartpoleSceneCfg
+# from omni.isaac.lab_tasks.manager_based.classic.cartpole.cartpole_env_cfg import CartpoleSceneCfg
 
 
 @configclass
@@ -106,6 +106,33 @@ class EventCfg:
             "velocity_range": (-0.01 * math.pi, 0.01 * math.pi),
         },
     )
+
+import omni.isaac.lab.sim as sim_utils
+from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
+from omni.isaac.lab.scene import InteractiveSceneCfg
+from omni.isaac.lab_assets.cartpole import CARTPOLE_CFG  # isort:skip
+@configclass
+class CartpoleSceneCfg(InteractiveSceneCfg):
+    """Configuration for a cart-pole scene."""
+
+    '''
+    地面平面和光源的配置与cartpole的配置之间存在一个关键区别。地面平面和光源是不可交互的，而cartpole是可交互的。
+    这种区别在用于指定它们的配置类中得到了体现。
+    地面平面和光源的配置使用 assets.AssetBaseCfg 的实例来指定，而cartpole使用 assets.ArticulationCfg 的实例来进行配置。
+    在模拟步骤期间，不处理任何不是交互式prim（即既不是资产也不是传感器）。
+    '''
+    # ground plane
+    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+
+    # lights
+    dome_light = AssetBaseCfg(
+        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
+    )
+
+    # articulation
+    # 任何带有 ENV_REGEX_NS 变量的实体的prim路径在每个环境中都会被克隆。
+    # 这个路径会被场景对象替换为 /World/envs/env_{i} ，其中 i 是环境索引。
+    robot: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
 
 @configclass
